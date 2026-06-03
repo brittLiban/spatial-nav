@@ -1,10 +1,10 @@
 # NOW.md — Week 3
 > Current focus. This week only. Nothing else.
 
-**Goal: Full pipeline connected end-to-end. TTS speaks live alerts. App works.**
+**Goal: Full pipeline connected end-to-end. expo-speech speaks live alerts. App works on a real phone.**
 
 **PREREQUISITE — Week 2 must be fully done.**
-- YOLO output must be filtered (size, confidence, left/right, cooldown)
+- COCO-SSD output must be filtered (size, confidence, left/right, cooldown)
 - `/alert` backend route must be returning Groq strings
 - Both confirmed working in isolation before connecting
 
@@ -15,13 +15,12 @@ When this week is done: archive this file → `archive/now/week-3.md`, then copy
 ## Definition of Done — Week 3
 
 - [ ] Full pipeline runs end-to-end without crashing:
-  Camera → YOLO → filters → backend → Groq → TTS speaks out loud
+  Camera → COCO-SSD → filters → backend → Groq → expo-speech speaks out loud
 - [ ] TTS queue working — only one alert plays at a time
-- [ ] TTS doesn't overlap — `speechSynthesis.cancel()` before each new utterance
-- [ ] "Start" button required before TTS can play (browser permission workaround)
+- [ ] expo-speech stops previous alert before speaking new one (`Speech.stop()`)
 - [ ] Alert text shown on screen while speaking
 - [ ] App runs for 10+ minutes without crashing or freezing
-- [ ] Tested on at least one real phone (not just laptop browser)
+- [ ] Tested on at least one real phone (not just simulator)
 
 ---
 
@@ -32,7 +31,7 @@ When this week is done: archive this file → `archive/now/week-3.md`, then copy
 - [ ] Check Groq response times under real usage — is latency acceptable?
 - [ ] If Groq is too slow: cache common alerts (door/left, door/right, person/left etc.)
 - [ ] Measure round-trip time: detection trigger → TTS speaks. Should be under 2 seconds.
-- [ ] Fix any CORS issues between frontend and backend
+- [ ] Fix any CORS issues between app and backend
 
 **Rudolph** ← *blocked until Week 2 filters are working*
 - [ ] Confirm pipeline handoff to Abdirashid's `AlertEngine` is clean
@@ -45,18 +44,16 @@ When this week is done: archive this file → `archive/now/week-3.md`, then copy
 
 **Abdirashid** ← *blocked until Rudolph's callback is confirmed working*
 - [ ] Wire `AlertEngine` fully: receives detection → calls `/alert` → gets string → speaks
-- [ ] Implement TTS queue:
-  ```js
-  const speak = (text) => {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.rate = 1.1
-    window.speechSynthesis.speak(u)
+- [ ] Implement TTS queue with expo-speech:
+  ```tsx
+  import * as Speech from 'expo-speech'
+  const speak = (text: string) => {
+    Speech.stop()
+    Speech.speak(text, { rate: 1.1, volume: 1.0 })
   }
   ```
-- [ ] Add "Start Navigation" button — required for browser audio permission
 - [ ] Show current alert text on screen (big, readable, high contrast)
-- [ ] Clean up UI — full screen camera, minimal chrome, status bar
+- [ ] Clean up UI — full screen camera, minimal chrome, status bar at bottom
 
 ---
 

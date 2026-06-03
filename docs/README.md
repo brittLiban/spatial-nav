@@ -12,14 +12,14 @@ Points your phone camera at the world — tells you what's ahead before you run 
 ## How It Works
 
 ```
-Camera → YOLO detects objects → size check → left/right → Groq → TTS speaks
+Camera → COCO-SSD detects objects → size check → left/right → Groq → expo-speech speaks
 ```
 
-1. Phone camera streams live
-2. YOLOv8 detects objects in real-time
+1. Expo app opens rear camera natively on the phone
+2. COCO-SSD detects objects in real-time (on-device)
 3. App filters: close enough? new object? which side?
 4. Groq generates a short natural alert
-5. Phone speaks it out loud
+5. Phone speaks it out loud via expo-speech
 
 ---
 
@@ -35,13 +35,14 @@ cp .env.example .env        # add your GROQ_API_KEY
 npm install
 node index.js               # runs on port 3001
 
-# Frontend (new terminal)
+# Mobile App (new terminal)
 cd client
 npm install
-npm run dev                 # open localhost:5173
+npx expo start              # scan QR code with Expo Go on your phone
 ```
 
-Get a free Groq key at: https://console.groq.com
+Get a free Groq key at: https://console.groq.com  
+Install Expo Go on your phone: App Store / Google Play
 
 ---
 
@@ -67,14 +68,14 @@ Start here every session:
 
 ## MVP Scope
 
-✅ Live camera feed  
-✅ Real-time object detection (YOLO)  
-✅ Box size threshold filter  
-✅ Left/right position detection  
-✅ Cooldown (no repeated alerts)  
-✅ Groq LLM alert generation  
-✅ TTS voice output  
+✅ Live rear camera feed (native)
+✅ Real-time object detection (COCO-SSD on-device)
+✅ Box size threshold filter
+✅ Left/right position detection
+✅ Cooldown (no repeated alerts)
+✅ Groq LLM alert generation
+✅ Native TTS voice output (expo-speech)
 
-🔲 Distance in feet (future)  
-🔲 Room calibration (future)  
-🔲 Room memory (future)  
+🔲 Distance in feet (future)
+🔲 Room calibration (future)
+🔲 Room memory (future)

@@ -1,10 +1,10 @@
 # NOW.md — Week 2
 > Current focus. This week only. Nothing else.
 
-**Goal: YOLO output processed. Object filtered by size and position. Alert trigger wired up.**
+**Goal: COCO-SSD output processed. Object filtered by size and position. Alert trigger wired up.**
 
 **PREREQUISITE — Week 1 must be fully done before starting Week 2.**
-YOLO must be detecting and logging objects on screen before any of this makes sense.
+COCO-SSD must be detecting and logging objects on a real phone before any of this makes sense.
 
 When this week is done: archive this file → `archive/now/week-2.md`, then copy `weeks/week-3.md` → `NOW.md`
 
@@ -19,7 +19,7 @@ When this week is done: archive this file → `archive/now/week-2.md`, then copy
 - [ ] `POST /alert` backend route built and tested in Postman
 - [ ] Groq API call working from backend — sends prompt, receives alert string
 - [ ] Fallback working — if Groq fails, return raw `"there is a [object] on the [left/right]"`
-- [ ] Frontend calls `/alert` when a detection passes all filters
+- [ ] App calls `/alert` when a detection passes all filters
 - [ ] Response logged to console (TTS not required yet — just confirm the string arrives)
 
 ---
@@ -31,27 +31,27 @@ When this week is done: archive this file → `archive/now/week-2.md`, then copy
   - Accepts `{ object: string, position: "left" | "right" }`
   - Calls Groq API with prompt
   - Returns `{ alert: string }`
-- [ ] Add Groq API integration (use `fetch` or `groq` npm package)
+- [ ] Add Groq API integration (use `groq` npm package)
 - [ ] Add error handling + fallback string if Groq times out or hits rate limit
 - [ ] Test with Postman: send `{ object: "door", position: "left" }`, confirm response
-- [ ] Deploy updated backend to Vercel
+- [ ] Deploy backend to Railway or Render
 
-**Rudolph** ← *blocked until Week 1 YOLO is working*
-- [ ] Parse YOLO output into clean detection objects: `{ class, confidence, bbox }`
+**Rudolph** ← *blocked until Week 1 COCO-SSD is working*
+- [ ] Parse COCO-SSD output into clean detection objects: `{ class, confidence, bbox }`
 - [ ] Implement confidence filter: drop anything below `MIN_CONFIDENCE = 0.75`
 - [ ] Implement box size check:
-  ```js
+  ```ts
   const rel = (bbox.w * bbox.h) / (frameW * frameH)
   if (rel < THRESHOLD) return // drop
   ```
 - [ ] Implement left/right:
-  ```js
+  ```ts
   const cx = bbox.x + bbox.w / 2
   const position = cx < frameW / 2 ? "left" : "right"
   ```
 - [ ] Implement cooldown map:
-  ```js
-  const key = `${class}_${position}`
+  ```ts
+  const key = `${cls}_${position}`
   if (Date.now() - cooldownMap[key] < COOLDOWN_MS) return
   cooldownMap[key] = Date.now()
   ```
@@ -60,7 +60,14 @@ When this week is done: archive this file → `archive/now/week-2.md`, then copy
 **Abdirashid** ← *blocked until Rudolph's callback is ready*
 - [ ] Build `AlertEngine` — receives detection from Rudolph, calls `/alert`, gets string back
 - [ ] Log alert string to console (just confirm it arrives — no TTS yet)
-- [ ] Start basic TTS integration with Web Speech API (can run in isolation first)
+- [ ] Start expo-speech integration in isolation:
+  ```tsx
+  import * as Speech from 'expo-speech'
+  const speak = (text: string) => {
+    Speech.stop()
+    Speech.speak(text, { rate: 1.1 })
+  }
+  ```
 
 ---
 
@@ -71,4 +78,4 @@ _Update as the week goes_
 ---
 
 ## Next Week Preview
-Week 3: Connect everything end-to-end. TTS speaks for real. One alert at a time. Full pipeline live.
+Week 3: Connect everything end-to-end. expo-speech speaks for real. One alert at a time. Full pipeline live.

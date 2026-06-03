@@ -4,11 +4,11 @@
 
 ```
 ┌──────────────────────────────────────────────┐
-│              MOBILE BROWSER                   │
+│           EXPO APP (React Native)             │
 │                                               │
-│  Camera Feed (getUserMedia)                   │
+│  expo-camera (rear camera, live frames)       │
 │       ↓  frame every 300ms                    │
-│  YOLOv8 / COCO-SSD                            │
+│  COCO-SSD (@tensorflow/tfjs-react-native)     │
 │       ↓  { class, confidence, bbox }          │
 │  Confidence filter  (< 0.75 → drop)           │
 │       ↓                                       │
@@ -22,7 +22,7 @@
 │                                            │  │
 │  ◀── alert string ─────────────────────────┘  │
 │       ↓                                       │
-│  Web Speech API → speaks out loud             │
+│  expo-speech → speaks out loud                │
 └──────────────────────────────────────────────┘
                     │ POST /alert
                     ▼
@@ -38,29 +38,45 @@
 ## Component Details
 
 ### Camera (Rudolph)
-```js
-// Camera.tsx
-const stream = await navigator.mediaDevices.getUserMedia({
-  video: { facingMode: { ideal: "environment" } }
-})
-videoRef.current.srcObject = stream
+```tsx
+// Camera.tsx — expo-camera
+import { CameraView, useCameraPermissions } from 'expo-camera'
+import { useRef } from 'react'
+
+const [permission, requestPermission] = useCameraPermissions()
+const cameraRef = useRef(null)
+
 // Capture frame every FRAME_INTERVAL_MS
-setInterval(() => {
-  ctx.drawImage(videoRef.current, 0, 0)
-  runDetection(canvas)
+setInterval(async () => {
+  if (!cameraRef.current) return
+  const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.3 })
+  runDetection(photo.base64)
 }, FRAME_INTERVAL_MS)
 ```
 
 ### YOLO / Detection (Rudolph)
-```js
+```tsx
 // YoloDetector.tsx
-const model = await cocoSsd.load()  // or YOLOv8 ONNX
-const predictions = await model.detect(canvas)
-// predictions: [{ class, score, bbox: [x, y, w, h] }]
+import * as tf from '@tensorflow/tfjs'
+import '@tensorflow/tfjs-react-native'
+import * as cocoSsd from '@tensorflow-models/coco-ssd'
+import { decodeJpeg } from '@tensorflow/tfjs-react-native'
+
+await tf.ready()
+const model = await cocoSsd.load()
+
+const detect = async (base64: string) => {
+  const rawData = Buffer.from(base64, 'base64')
+  const imageTensor = decodeJpeg(rawData)
+  const predictions = await model.detect(imageTensor)
+  imageTensor.dispose()
+  return predictions
+  // predictions: [{ class, score, bbox: [x, y, w, h] }]
+}
 ```
 
 ### Alert Filters (Rudolph)
-```js
+```tsx
 // AlertEngine logic — runs on every detection
 const rel = (bbox[2] * bbox[3]) / (frameW * frameH)
 if (prediction.score < MIN_CONFIDENCE) return
@@ -95,14 +111,13 @@ app.post('/alert', async (req, res) => {
 ```
 
 ### TTS (Abdirashid)
-```js
-// VoiceOutput.tsx
-const speak = (text) => {
-  window.speechSynthesis.cancel()
-  const u = new SpeechSynthesisUtterance(text)
-  u.rate = 1.1
-  u.volume = 1
-  window.speechSynthesis.speak(u)
+```tsx
+// VoiceOutput.tsx — expo-speech (no browser restriction, no user gesture needed)
+import * as Speech from 'expo-speech'
+
+const speak = (text: string) => {
+  Speech.stop()
+  Speech.speak(text, { rate: 1.1, volume: 1.0 })
 }
 ```
 
@@ -114,8 +129,8 @@ const speak = (text) => {
 |------|---------|--------|
 | `THRESHOLD` | `0.05` | Min box size (% of frame) to trigger alert |
 | `COOLDOWN_MS` | `4000` | Ms before same object re-alerts |
-| `FRAME_INTERVAL_MS` | `300` | How often to sample video frame |
-| `MIN_CONFIDENCE` | `0.75` | Min YOLO confidence to accept |
+| `FRAME_INTERVAL_MS` | `300` | How often to capture a camera frame |
+| `MIN_CONFIDENCE` | `0.75` | Min COCO-SSD confidence to accept |
 
 ---
 

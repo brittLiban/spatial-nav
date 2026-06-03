@@ -4,11 +4,11 @@
 > Read this before anything else. Some tasks cannot start until others finish.
 
 ```
-Liban: repo setup + deploy
+Liban: repo setup + Expo scaffold
         ↓ unblocks everyone
-        ├── Rudolph: camera feed
+        ├── Rudolph: expo-camera feed
         │       ↓
-        │   Rudolph: YOLO running
+        │   Rudolph: COCO-SSD running on-device
         │       ↓
         │   Rudolph: box size check ──────────────────────────┐
         │   Rudolph: left/right check ────────────────────────┤
@@ -21,7 +21,7 @@ Liban: repo setup + deploy
                                                   ↓
                                     Abdirashid: AlertEngine wired to backend
                                                   ↓
-                                    Abdirashid: TTS speaks alert
+                                    Abdirashid: expo-speech speaks alert
                                                   ↓
                                     ALL THREE: end-to-end test
                                                   ↓
@@ -34,12 +34,11 @@ Liban: repo setup + deploy
 
 ### Week 1
 - [ ] Create GitHub repo (`spatial-nav`)
-- [ ] Scaffold `client/` — React + Vite + TypeScript
+- [ ] Scaffold `client/` — Expo + TypeScript (`npx create-expo-app client --template blank-typescript`)
 - [ ] Scaffold `server/` — Node + Express
 - [ ] Commit initial folder structure, invite Rudolph and Abdirashid
-- [ ] Set up Vercel — deploy both frontend and backend
 - [ ] Add `.env.example` with `GROQ_API_KEY=` placeholder
-- [ ] Confirm both team members can pull and run locally
+- [ ] Confirm both team members can pull and run locally via Expo Go
 
 ### Week 2 — [BLOCKED: Week 1 must be done]
 - [ ] Build `POST /alert` route in `server/routes/alert.js`
@@ -55,18 +54,18 @@ Liban: repo setup + deploy
   ```
 - [ ] Handle failures — if Groq times out or rate-limits, return raw input string
 - [ ] Test with Postman before telling Abdirashid it's ready
-- [ ] Deploy updated backend to Vercel
+- [ ] Deploy backend to Railway or Render (not Vercel — cold starts hurt latency)
 
 ### Week 3 — [BLOCKED: Week 2 backend route must be live and tested]
 - [ ] Monitor round-trip time: detection → TTS speaking. Target: under 2 seconds
 - [ ] If latency is too high: cache common alerts (door/left, door/right, person/left, etc.)
-- [ ] Fix any CORS issues between frontend and backend
+- [ ] Fix any CORS issues between app and backend
 - [ ] Confirm no memory leaks after 10 min of continuous use
 
 ### Week 4 — [BLOCKED: Full pipeline must be working end-to-end]
-- [ ] Final Vercel production deploy
+- [ ] Final backend deploy, confirm production URL works from phone
 - [ ] README complete — clone to running in under 5 minutes
-- [ ] Performance audit: browser memory tab after 20 min
+- [ ] Performance audit: memory usage after 20 min on phone
 - [ ] Document future feature: distance in feet (focal length formula)
 
 ---
@@ -75,38 +74,39 @@ Liban: repo setup + deploy
 
 ### Week 1 — [BLOCKED: Wait for Liban to push initial repo]
 - [ ] Pull repo
-- [ ] Implement `getUserMedia` in `Camera.tsx`:
-  ```js
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: "environment" } }
-  })
+- [ ] Install expo-camera, request camera permissions:
+  ```tsx
+  import { CameraView, useCameraPermissions } from 'expo-camera'
+  const [permission, requestPermission] = useCameraPermissions()
   ```
-- [ ] Render stream to `<video>` element
-- [ ] Set up `<canvas>` overlay to capture frames at interval
-- [ ] Load COCO-SSD model:
-  ```js
-  import * as cocoSsd from '@tensorflow-models/coco-ssd'
-  const model = await cocoSsd.load()
+- [ ] Render live rear camera feed in `Camera.tsx`
+- [ ] Install TF.js stack:
+  ```bash
+  npx expo install expo-gl
+  npm install @tensorflow/tfjs @tensorflow/tfjs-react-native @tensorflow-models/coco-ssd
   ```
-- [ ] Run model on canvas frame every 300ms
-- [ ] Draw bounding boxes on canvas overlay
+- [ ] Call `tf.ready()` then load COCO-SSD model
+- [ ] Capture frames every 300ms and run model
+- [ ] Draw bounding boxes on screen over detections
 - [ ] Console log every detection: `{ class, confidence, bbox }`
 
-### Week 2 — [BLOCKED: Week 1 YOLO detections must be logging correctly]
+> If TF.js setup blocks you past 2 days, log it in OPEN_QUESTIONS.md — fallback is server-side detection.
+
+### Week 2 — [BLOCKED: Week 1 COCO-SSD detections must be logging correctly]
 - [ ] Parse detections into clean objects: `{ class, confidence, bbox: {x,y,w,h} }`
 - [ ] Confidence filter — drop anything below `MIN_CONFIDENCE = 0.75`
 - [ ] Box size check:
-  ```js
+  ```ts
   const rel = (bbox.w * bbox.h) / (frameW * frameH)
   if (rel < 0.05) return
   ```
 - [ ] Left/right detection:
-  ```js
+  ```ts
   const cx = bbox.x + bbox.w / 2
   const position = cx < frameW / 2 ? "left" : "right"
   ```
 - [ ] Cooldown timer:
-  ```js
+  ```ts
   const key = `${cls}_${position}`
   if (Date.now() - cooldownMap[key] < 4000) return
   cooldownMap[key] = Date.now()
@@ -115,7 +115,7 @@ Liban: repo setup + deploy
 
 ### Week 3 — [BLOCKED: Week 2 filters must all be working]
 - [ ] Handle multiple objects in same frame — only pass the one with the biggest box
-- [ ] Tune `FRAME_INTERVAL_MS` on a real phone (not just laptop)
+- [ ] Tune `FRAME_INTERVAL_MS` on a real phone (not just simulator)
 - [ ] Test in: bright room, dim lighting, hallway, cluttered background
 - [ ] Log failure cases to `OPEN_QUESTIONS.md`
 
@@ -130,9 +130,9 @@ Liban: repo setup + deploy
 
 ### Week 1 — [BLOCKED: Wait for Liban to push initial repo]
 - [ ] Pull repo
-- [ ] Build React app shell — full-screen camera layout
+- [ ] Build Expo app shell — full-screen camera layout, portrait mode
 - [ ] Placeholder status bar at bottom (will show alerts later)
-- [ ] Help Rudolph with canvas overlay if needed
+- [ ] Help Rudolph with bounding box overlay if needed
 - [ ] Sign up for Groq at `console.groq.com` — get free API key
 
 ### Week 2 — [BLOCKED: Rudolph's detection callback must be ready AND Liban's backend route must be live]
@@ -141,26 +141,24 @@ Liban: repo setup + deploy
   - POSTs to `/alert`
   - Receives alert string back
   - Logs to console (TTS not required yet — just confirm string arrives)
-- [ ] Start TTS in isolation (test it separately from the pipeline):
-  ```js
-  const speak = (text) => {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.rate = 1.1
-    window.speechSynthesis.speak(u)
+- [ ] Start expo-speech integration in isolation (test it separately from the pipeline):
+  ```tsx
+  import * as Speech from 'expo-speech'
+  const speak = (text: string) => {
+    Speech.stop()
+    Speech.speak(text, { rate: 1.1 })
   }
   ```
 
 ### Week 3 — [BLOCKED: AlertEngine must be receiving Groq strings correctly]
-- [ ] Wire TTS into AlertEngine — Groq string → spoken alert
-- [ ] TTS queue — `cancel()` before each new utterance so they never overlap
-- [ ] Add "Start Navigation" button — browser requires user gesture before audio plays
+- [ ] Wire expo-speech into AlertEngine — Groq string → spoken alert
+- [ ] TTS queue — `Speech.stop()` before each new utterance so they never overlap
 - [ ] Show current alert text on screen while speaking (large, high contrast)
 - [ ] UI cleanup — works on phone screen, looks clean
 
 ### Week 4 — [BLOCKED: Full pipeline must be working end-to-end]
 - [ ] End-to-end test on iPhone AND Android
-- [ ] Test TTS voice quality across browsers — pick best voice if browser allows
+- [ ] Test TTS voice across both platforms — adjust rate/pitch if needed
 - [ ] UI final pass — readable in bright outdoor light
 - [ ] Record demo video (backup)
 - [ ] Rehearse demo script

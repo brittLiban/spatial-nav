@@ -15,7 +15,7 @@ Do not add features this week. Ship what works.
 - [ ] Threshold and cooldown values tuned from real-world testing
 - [ ] Demo run-through done at least once by all three team members
 - [ ] Demo video recorded (backup in case live demo has issues)
-- [ ] README complete — setup instructions work from scratch
+- [ ] README complete — setup instructions work from scratch (Expo Go in under 5 minutes)
 - [ ] All three members can run the app on their own phone independently
 
 ---
@@ -23,10 +23,10 @@ Do not add features this week. Ship what works.
 ## This Week's Tasks by Person
 
 **Liban**
-- [ ] Final Vercel deploy — confirm production URL works on phone
-- [ ] README complete: clone → install → run works in under 5 minutes
+- [ ] Final backend deploy — confirm production URL works from phone on LTE (not just WiFi)
+- [ ] README complete: clone → install → `npx expo start` works in under 5 minutes
 - [ ] Make sure `.env.example` is accurate and documented
-- [ ] Performance audit: any memory leaks after 20 min? Check browser memory tab
+- [ ] Performance audit: any memory leaks after 20 min? Use Expo DevTools / Flipper
 - [ ] Write up what "distance in feet" would look like (future feature doc)
 
 **Rudolph**
@@ -39,10 +39,10 @@ Do not add features this week. Ship what works.
 - [ ] Document failure modes in `OPEN_QUESTIONS.md`
 
 **Abdirashid**
-- [ ] End-to-end test on iPhone and Android
-- [ ] Fix any TTS voice issues (different browsers have different default voices)
+- [ ] End-to-end test on iPhone AND Android
+- [ ] Check TTS voice quality on both platforms — adjust rate/pitch if needed
 - [ ] Tune alert rate — does it feel right? Not too often, not missing things?
-- [ ] UI final pass — readable on phone screen in bright light
+- [ ] UI final pass — readable on phone screen in bright outdoor light
 - [ ] Rehearse demo walkthrough
 
 **All Three**
@@ -55,8 +55,8 @@ Do not add features this week. Ship what works.
 ## Demo Script (5 minutes)
 
 1. **Intro (30 sec):** What the problem is. Who it's for.
-2. **Show the pipeline (1 min):** Pull up ARCHITECTURE.md or a simple diagram. Explain the 3 ML components in one sentence each.
-3. **Live demo (2 min):** Walk toward a door. Walk toward a person. Show the alert firing and TTS speaking.
+2. **Show the pipeline (1 min):** Pull up ARCHITECTURE.md or a simple diagram. Explain the 3 components in one sentence each.
+3. **Live demo (2 min):** Walk toward a door. Walk toward a person. Show the alert firing and expo-speech speaking.
 4. **What's next (30 sec):** Distance in feet. Room calibration. Height measurement.
 5. **Q&A**
 
