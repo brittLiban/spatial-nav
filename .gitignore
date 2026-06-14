@@ -4,3 +4,9 @@ node_modules/
 dist/
 build/
 *.log
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pt

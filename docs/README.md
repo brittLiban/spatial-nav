@@ -12,37 +12,59 @@ Points your phone camera at the world — tells you what's ahead before you run 
 ## How It Works
 
 ```
-Camera → COCO-SSD detects objects → size check → left/right → Groq → expo-speech speaks
+Phone camera → POST frame to laptop → YOLOv8 detects objects → filters → Groq → expo-speech speaks
 ```
 
-1. Expo app opens rear camera natively on the phone
-2. COCO-SSD detects objects in real-time (on-device)
-3. App filters: close enough? new object? which side?
-4. Groq generates a short natural alert
-5. Phone speaks it out loud via expo-speech
+1. Expo app opens rear camera on the phone (capture only)
+2. Each frame is sent to your laptop over Wi‑Fi
+3. **YOLOv8 runs on the laptop** (Python + Ultralytics) — fast, accurate
+4. App filters: close enough? new object? which side?
+5. Groq generates a short natural alert
+6. Phone speaks it out loud via expo-speech
 
 ---
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/[your-repo]/spatial-nav
+git clone https://github.com/brittLiban/spatial-nav
 cd spatial-nav
 
-# Backend
-cd server
-cp .env.example .env        # add your GROQ_API_KEY
-npm install
-node index.js               # runs on port 3001
+# 1. Python YOLO service (terminal 1)
+cd server/python
+python -m venv venv
+# Windows: venv\Scripts\activate   |   Mac/Linux: source venv/bin/activate
+pip install -r requirements.txt
+python detect_app.py              # runs on port 3002, downloads yolov8n.pt on first run
 
-# Mobile App (new terminal)
-cd client
+# 2. Node backend (terminal 2)
+cd server
+cp .env.example .env              # add GROQ_API_KEY
 npm install
-npx expo start              # scan QR code with Expo Go on your phone
+node index.js                     # runs on port 3001, proxies /detect to Python
+
+# 3. Mobile app (terminal 3)
+cd client
+cp .env.example .env              # EXPO_PUBLIC_API_URL = your PC LAN IP, e.g. http://10.0.0.47:3001
+npm install --legacy-peer-deps
+npx expo start -c                 # scan QR with Expo Go (SDK 54)
 ```
 
-Get a free Groq key at: https://console.groq.com  
-Install Expo Go on your phone: App Store / Google Play
+**Requirements:** Phone and laptop on the same Wi‑Fi. Python 3.10+. Expo Go from the App Store (SDK 54).  
+Get a free Groq key at: https://console.groq.com
+
+**Verify:** `curl http://localhost:3001/health` should return `"detectService":"ok"`.
+
+### Demo walkthrough
+
+1. Start **Python YOLO** (`python detect_app.py`), then **Node** (`node index.js`), then Expo
+2. Grant camera permission — full-screen rear camera opens
+3. Point at a **person** or **chair** within ~6 feet
+4. Colored bounding boxes appear (blue=left, orange=right, green=ahead)
+5. App speaks alerts like *"Person on your left"* via Groq + native TTS
+6. Same object+direction won't repeat for 2.5 seconds (cooldown)
+
+**Detectable objects:** person, chair, car, dog, sports ball, and other COCO classes on the safety allowlist. Doors and walls are not supported.
 
 ---
 
@@ -69,12 +91,13 @@ Start here every session:
 ## MVP Scope
 
 ✅ Live rear camera feed (native)
-✅ Real-time object detection (COCO-SSD on-device)
+✅ Server-side YOLOv8 detection (laptop)
 ✅ Box size threshold filter
 ✅ Left/right position detection
 ✅ Cooldown (no repeated alerts)
 ✅ Groq LLM alert generation
-✅ Native TTS voice output (expo-speech)
+✅ Bounding box overlay with class, confidence, direction
+✅ Scanning / alert status bar
 
 🔲 Distance in feet (future)
 🔲 Room calibration (future)

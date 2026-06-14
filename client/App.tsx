@@ -1,17 +1,23 @@
+import { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
+import HomeScreen from './components/HomeScreen'
 import CameraView from './components/Camera'
-import AlertBar from './components/AlertBar'
-import { useState } from 'react'
+import { colors } from './src/theme'
+
+type Screen = 'home' | 'scanning'
 
 export default function App() {
-  const [alertText, setAlertText] = useState('')
+  const [screen, setScreen] = useState<Screen>('home')
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
-      <CameraView onAlert={setAlertText} />
-      <AlertBar text={alertText} />
+      <StatusBar style={screen === 'home' ? 'dark' : 'light'} />
+      {screen === 'home' ? (
+        <HomeScreen onStartScanning={() => setScreen('scanning')} />
+      ) : (
+        <CameraView onExit={() => setScreen('home')} />
+      )}
     </View>
   )
 }
@@ -19,6 +25,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: colors.background,
   },
 })
