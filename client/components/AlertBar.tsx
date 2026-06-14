@@ -1,15 +1,21 @@
 import { StyleSheet, Text, View } from 'react-native'
+import { colors, radii, spacing } from '../src/theme'
 
 interface Props {
-  text: string
+  alert: string | null
+  isScanning: boolean
 }
 
-export default function AlertBar({ text }: Props) {
+export default function AlertBar({ alert, isScanning }: Props) {
+  const text = alert ?? (isScanning ? 'Scanning…' : 'No hazards detected')
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text} numberOfLines={2}>
-        {text || 'Scanning…'}
-      </Text>
+      <View style={styles.bubble}>
+        <Text style={styles.text} numberOfLines={2}>
+          {text}
+        </Text>
+      </View>
     </View>
   )
 }
@@ -17,18 +23,22 @@ export default function AlertBar({ text }: Props) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    paddingBottom: 36,
+    bottom: spacing.lg,
+    left: spacing.md,
+    right: spacing.md,
+  },
+  bubble: {
+    backgroundColor: colors.cameraOverlay,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   text: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
   },
 })
