@@ -1,8 +1,8 @@
 export const MIN_FRAME_GAP_MS = 400
 export const MIN_CAPTURE_GAP_MS = 700
 export const CAMERA_WARMUP_MS = 600
-export const MIN_CONFIDENCE = 0.4
-export const MIN_BOX_AREA_RATIO = 0.015
+export const MIN_CONFIDENCE = 0.25
+export const MIN_BOX_AREA_RATIO = 0.005
 export const LEFT_THRESHOLD = 0.35
 export const RIGHT_THRESHOLD = 0.65
 export const COOLDOWN_MS = 2500

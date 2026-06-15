@@ -11,7 +11,7 @@ import uvicorn
 
 app = FastAPI()
 model = YOLO(os.environ.get("YOLO_MODEL", "yolov8s.pt"))
-MIN_CONF = float(os.environ.get("YOLO_MIN_CONF", "0.35"))
+MIN_CONF = float(os.environ.get("YOLO_MIN_CONF", "0.20"))
 
 
 class DetectRequest(BaseModel):
