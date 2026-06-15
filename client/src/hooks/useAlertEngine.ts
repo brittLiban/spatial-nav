@@ -17,12 +17,31 @@ function cooldownKey(detection: FilteredDetection) {
 
 function localFallback(detection: FilteredDetection) {
   const label = detection.class.charAt(0).toUpperCase() + detection.class.slice(1)
-  const directionPhrase = {
+
+  if (detection.proximity === 'immediate') {
+    const phrase = {
+      ahead: 'right in front of you',
+      left: 'right beside you on the left',
+      right: 'right beside you on the right',
+    }[detection.direction]
+    return `${label} ${phrase}!`
+  }
+
+  if (detection.proximity === 'close') {
+    const phrase = {
+      ahead: 'close ahead',
+      left: 'close on your left',
+      right: 'close on your right',
+    }[detection.direction]
+    return `${label} ${phrase}`
+  }
+
+  const phrase = {
+    ahead: 'ahead of you',
     left: 'on your left',
     right: 'on your right',
-    ahead: 'ahead of you',
   }[detection.direction]
-  return `${label} ${directionPhrase}`
+  return `${label} ${phrase}`
 }
 
 export function useAlertEngine(detectionFrame: DetectionFrame) {
@@ -93,6 +112,7 @@ export function useAlertEngine(detectionFrame: DetectionFrame) {
           body: JSON.stringify({
             class: primary.class,
             direction: primary.direction,
+            proximity: primary.proximity,
             confidence: Math.round(primary.score * 100),
           }),
           signal: controller.signal,

@@ -61,3 +61,10 @@ export const CLASS_PRIORITY: Record<string, number> = {
   'sports ball': 2,
 }
 export const DEFAULT_CLASS_PRIORITY = 3
+
+// Proximity is estimated from bounding box area ratio — bigger box = closer.
+// Not a precise meter reading, but reliable enough for "stop now" vs "heads up".
+export const PROXIMITY_THRESHOLDS = {
+  immediate: 0.12, // box > 12% of frame  → ~arm's reach, stop immediately
+  close: 0.04,     // box > 4% of frame   → a few steps away, slow down
+} as const

@@ -5,14 +5,18 @@ import {
   LEFT_THRESHOLD,
   MIN_BOX_AREA_RATIO,
   MIN_CONFIDENCE,
+  PROXIMITY_THRESHOLDS,
   RELEVANT_CLASSES,
   RIGHT_THRESHOLD,
 } from '../constants/detectionConfig'
+
+export type Proximity = 'immediate' | 'close' | 'approaching'
 
 export type FilteredDetection = {
   class: string
   score: number
   direction: 'left' | 'right' | 'ahead'
+  proximity: Proximity
   bbox: number[]
   areaRatio: number
   alarmScore: number
@@ -46,6 +50,12 @@ export function getDirection(
   return 'ahead'
 }
 
+function getProximity(areaRatio: number): Proximity {
+  if (areaRatio >= PROXIMITY_THRESHOLDS.immediate) return 'immediate'
+  if (areaRatio >= PROXIMITY_THRESHOLDS.close) return 'close'
+  return 'approaching'
+}
+
 function computeAlarmScore(
   detection: Omit<FilteredDetection, 'alarmScore'>
 ): number {
@@ -77,7 +87,15 @@ export function filterDetections(
     .map((prediction) => {
       const direction = getDirection(prediction.bbox, frameWidth)
       const areaRatio = getBoxAreaRatio(prediction.bbox, frameWidth, frameHeight)
-      const base = { class: prediction.class, score: prediction.score, direction, bbox: prediction.bbox, areaRatio }
+      const proximity = getProximity(areaRatio)
+      const base = {
+        class: prediction.class,
+        score: prediction.score,
+        direction,
+        proximity,
+        bbox: prediction.bbox,
+        areaRatio,
+      }
       return { ...base, alarmScore: computeAlarmScore(base) }
     })
 }

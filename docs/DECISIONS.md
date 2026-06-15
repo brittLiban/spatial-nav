@@ -49,4 +49,20 @@ prevents alert flooding and focuses the user on the nearest hazard.
 
 ---
 
+### [2026-06-15] — Proximity from bounding box area ratio, not focal length math
+True meter distances from a monocular camera require focal length calibration per device model.
+Box area ratio gives reliable categories (immediate / close / approaching) that are more actionable for navigation anyway. "Right in front of you!" is more useful than "1.8 meters."
+
+### [2026-06-15] — Global 2s alert gap on top of per-key 3s cooldown
+Per-key cooldown alone doesn't prevent rapid-fire when many different objects are detected simultaneously — each new class is treated as a fresh target. Global gap enforces one alert per 2 seconds total regardless of what's detected.
+
+### [2026-06-15] — Priority score = areaRatio × classDanger × directionWeight
+When 20 objects are in frame, we need one clear winner. Composite score lets a close person beat a distant potted plant even if the plant's box is larger in absolute pixels. Direction weight of 1.5× for "ahead" reflects that objects in your direct path are more urgent than objects to the side.
+
+### [2026-06-15] — Client-side image resize to 640px before transmitting
+Full-resolution iPhone photo (~2 MB JPEG) over local WiFi caused 2–4s round trip. Resize to 640px wide via `expo-image-manipulator` before sending. YOLOv8 resizes everything to 640px anyway, so no accuracy is lost. Latency dropped to ~400–700ms.
+
+### [2026-06-15] — Server-side EXIF transpose before YOLO inference
+PIL's `Image.open()` ignores iOS EXIF rotation metadata. YOLOv8 was receiving a sideways image every frame. Fixed with `ImageOps.exif_transpose()`. This was the root cause of near-zero detection accuracy.
+
 _New decisions go at the top._

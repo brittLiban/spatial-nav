@@ -64,7 +64,7 @@ export default function DetectionOverlay({ detectionFrame, screenSize }: Props) 
           >
             <View style={[styles.label, { backgroundColor: color }]}>
               <Text style={styles.labelText}>
-                {detection.class} {Math.round(detection.score * 100)}% · {detection.direction}
+                {detection.class} · {detection.proximity} · {detection.direction}
               </Text>
             </View>
           </View>
