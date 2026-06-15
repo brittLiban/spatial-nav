@@ -1,5 +1,7 @@
 import type { RawDetection } from '../hooks/useObjectDetection'
 import {
+  CLASS_PRIORITY,
+  DEFAULT_CLASS_PRIORITY,
   LEFT_THRESHOLD,
   MIN_BOX_AREA_RATIO,
   MIN_CONFIDENCE,
@@ -13,6 +15,14 @@ export type FilteredDetection = {
   direction: 'left' | 'right' | 'ahead'
   bbox: number[]
   areaRatio: number
+  alarmScore: number
+}
+
+// Things directly ahead are 1.5× more urgent than things to the side.
+const DIRECTION_WEIGHT: Record<FilteredDetection['direction'], number> = {
+  ahead: 1.5,
+  left: 1.0,
+  right: 1.0,
 }
 
 export function getBoxAreaRatio(bbox: number[], frameWidth: number, frameHeight: number) {
@@ -36,6 +46,13 @@ export function getDirection(
   return 'ahead'
 }
 
+function computeAlarmScore(
+  detection: Omit<FilteredDetection, 'alarmScore'>
+): number {
+  const priority = CLASS_PRIORITY[detection.class] ?? DEFAULT_CLASS_PRIORITY
+  return detection.areaRatio * priority * DIRECTION_WEIGHT[detection.direction]
+}
+
 export function filterDetections(
   predictions: RawDetection[],
   frameWidth: number,
@@ -57,13 +74,12 @@ export function filterDetections(
 
       return getBoxAreaRatio(prediction.bbox, frameWidth, frameHeight) >= MIN_BOX_AREA_RATIO
     })
-    .map((prediction) => ({
-      class: prediction.class,
-      score: prediction.score,
-      direction: getDirection(prediction.bbox, frameWidth),
-      bbox: prediction.bbox,
-      areaRatio: getBoxAreaRatio(prediction.bbox, frameWidth, frameHeight),
-    }))
+    .map((prediction) => {
+      const direction = getDirection(prediction.bbox, frameWidth)
+      const areaRatio = getBoxAreaRatio(prediction.bbox, frameWidth, frameHeight)
+      const base = { class: prediction.class, score: prediction.score, direction, bbox: prediction.bbox, areaRatio }
+      return { ...base, alarmScore: computeAlarmScore(base) }
+    })
 }
 
 export function pickPrimaryDetection(
@@ -73,5 +89,6 @@ export function pickPrimaryDetection(
     return null
   }
 
-  return [...filtered].sort((a, b) => b.areaRatio - a.areaRatio)[0]
+  // Highest alarm score wins: class danger × proximity (area) × direction weight
+  return [...filtered].sort((a, b) => b.alarmScore - a.alarmScore)[0]
 }

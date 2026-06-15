@@ -6,7 +6,7 @@ import {
   pickPrimaryDetection,
   type FilteredDetection,
 } from '../utils/detectionFilters'
-import { ALERT_CLEAR_MS, COOLDOWN_MS } from '../constants/detectionConfig'
+import { ALERT_CLEAR_MS, COOLDOWN_MS, GLOBAL_ALERT_GAP_MS } from '../constants/detectionConfig'
 import type { DetectionFrame } from './useObjectDetection'
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001'
@@ -29,6 +29,7 @@ export function useAlertEngine(detectionFrame: DetectionFrame) {
   const [currentAlert, setCurrentAlert] = useState<string | null>(null)
   const cooldownMap = useRef(new Map<string, number>())
   const lastSpokenKeyRef = useRef<string | null>(null)
+  const lastAnyAlertRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const clearAlertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -59,13 +60,21 @@ export function useAlertEngine(detectionFrame: DetectionFrame) {
     const lastAlert = cooldownMap.current.get(key) ?? 0
     const isNewTarget = key !== lastSpokenKeyRef.current
     const cooldownExpired = now - lastAlert > COOLDOWN_MS
+    const globalGapExpired = now - lastAnyAlertRef.current > GLOBAL_ALERT_GAP_MS
 
+    // Per-key cooldown: don't repeat the same thing too often.
     if (!isNewTarget && !cooldownExpired) {
+      return
+    }
+    // Global gap: even if it's a new target, don't speak if we just spoke
+    // something — prevents rapid-fire when many objects are detected at once.
+    if (!globalGapExpired) {
       return
     }
 
     lastSpokenKeyRef.current = key
     cooldownMap.current.set(key, now)
+    lastAnyAlertRef.current = now
 
     const immediateText = localFallback(primary)
     setCurrentAlert(immediateText)
@@ -99,7 +108,7 @@ export function useAlertEngine(detectionFrame: DetectionFrame) {
         if (alertText !== immediateText) {
           setCurrentAlert(alertText)
           Speech.stop()
-          Speech.speak(alertText, { language: 'en', rate: 1.1, pitch: 1.0 })
+          Speech.speak(alertText, { language: 'en', rate: 1.1, pitch: 1.0, volume: 1.0 })
         }
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
