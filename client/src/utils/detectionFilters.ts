@@ -27,12 +27,11 @@ export function getDirection(
   const [x, , w] = bbox
   const centerRatio = (x + w / 2) / frameWidth
 
-  // Rear camera: image left = user's right, image right = user's left.
   if (centerRatio < LEFT_THRESHOLD) {
-    return 'right'
+    return 'left'
   }
   if (centerRatio > RIGHT_THRESHOLD) {
-    return 'left'
+    return 'right'
   }
   return 'ahead'
 }
