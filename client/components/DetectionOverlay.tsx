@@ -13,15 +13,17 @@ function scaleBox(
   imageSize: { width: number; height: number },
   screenSize: { width: number; height: number }
 ) {
-  const scaleX = screenSize.width / imageSize.width
-  const scaleY = screenSize.height / imageSize.height
+  // Camera fills the screen in "cover" mode — scale uniformly to fill, then crop center
+  const scale = Math.max(screenSize.width / imageSize.width, screenSize.height / imageSize.height)
+  const offsetX = (imageSize.width * scale - screenSize.width) / 2
+  const offsetY = (imageSize.height * scale - screenSize.height) / 2
   const [x, y, w, h] = bbox
 
   return {
-    left: x * scaleX,
-    top: y * scaleY,
-    width: w * scaleX,
-    height: h * scaleY,
+    left: x * scale - offsetX,
+    top: y * scale - offsetY,
+    width: w * scale,
+    height: h * scale,
   }
 }
 

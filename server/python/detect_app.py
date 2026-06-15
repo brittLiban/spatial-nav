@@ -4,7 +4,7 @@ import io
 import os
 
 from fastapi import FastAPI, HTTPException
-from PIL import Image
+from PIL import Image, ImageOps
 from pydantic import BaseModel
 from ultralytics import YOLO
 import uvicorn
@@ -27,7 +27,10 @@ def health():
 def detect(req: DetectRequest):
     try:
         img_bytes = base64.b64decode(req.image)
-        img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+        # exif_transpose applies the EXIF rotation flag before inference —
+        # iOS photos are landscape pixels with a "rotate 90°" EXIF tag, so
+        # without this YOLO sees a sideways image every time.
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(img_bytes)).convert("RGB"))
         width, height = img.size
 
         results = model(img, verbose=False, conf=MIN_CONF)[0]
@@ -44,8 +47,19 @@ def detect(req: DetectRequest):
                 }
             )
 
+        print(
+            f"[detect] {width}x{height}  {len(detections)} detections"
+            + (
+                f": {', '.join(f'{d[\"class\"]} {d[\"score\"]:.2f}' for d in detections)}"
+                if detections
+                else ""
+            ),
+            flush=True,
+        )
+
         return {"width": width, "height": height, "detections": detections}
     except Exception as err:
+        print(f"[detect] ERROR: {err}", flush=True)
         raise HTTPException(status_code=400, detail=str(err)) from err
 
 
