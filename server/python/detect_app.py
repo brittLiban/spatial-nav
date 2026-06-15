@@ -10,7 +10,7 @@ from ultralytics import YOLO
 import uvicorn
 
 app = FastAPI()
-model = YOLO(os.environ.get("YOLO_MODEL", "yolov8n.pt"))
+model = YOLO(os.environ.get("YOLO_MODEL", "yolov8s.pt"))
 MIN_CONF = float(os.environ.get("YOLO_MIN_CONF", "0.35"))
 
 

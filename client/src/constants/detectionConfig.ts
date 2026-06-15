@@ -7,7 +7,7 @@ export const LEFT_THRESHOLD = 0.35
 export const RIGHT_THRESHOLD = 0.65
 export const COOLDOWN_MS = 2500
 export const ALERT_CLEAR_MS = 1200
-export const PHOTO_QUALITY = 0.25
+export const PHOTO_QUALITY = 0.45
 
 export const RELEVANT_CLASSES = [
   'person',

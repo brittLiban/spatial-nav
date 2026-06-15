@@ -1,67 +1,67 @@
-# NOW.md — Week 1
+# NOW.md — Week 4
 > Current focus. This week only. Nothing else.
 
-**Goal: Repo live. Expo app running on a real phone. COCO-SSD detecting objects on screen.**
+**Goal: App is solid, tuned, and demo-ready. No new features.**
 
-When this week is done: archive this file → `archive/now/week-1.md`, then copy `weeks/week-2.md` → `NOW.md`
+The full pipeline is working end-to-end: camera → YOLOv8 (laptop) → Node/Groq → expo-speech.
+This week is tuning, testing, and demo prep only.
+
+When this week is done: archive this file → `archive/now/week-4.md`, then append final entry to `LOG.md`
 
 ---
 
-## Definition of Done — Week 1
+## Definition of Done — Week 4
 
-- [ ] GitHub repo created, all three members have access
-- [ ] Expo (React Native) + TypeScript app scaffolded and running via Expo Go
-- [ ] Node + Express backend running locally on port 3001
-- [ ] `.env` file set up, `.env.example` committed to repo
-- [ ] expo-camera renders live rear camera feed on the phone
-- [ ] @tensorflow/tfjs-react-native + COCO-SSD model loaded and running on camera frames
-- [ ] Bounding boxes drawn over detected objects on screen
-- [ ] Class label + confidence score visible on each box
-- [ ] Console log on every detection: `{ class, confidence, bbox: [x,y,w,h] }`
-
-**That's it. No LLM. No TTS. No alerts. Just COCO-SSD seeing things on a real phone.**
+- [ ] App runs for 20+ minutes on a real phone without crashing
+- [ ] Threshold and cooldown values tuned from real-world testing
+- [ ] Demo run-through done at least once by all three team members
+- [ ] Demo video recorded (backup in case live demo has issues)
+- [ ] README complete — setup instructions work from scratch in under 5 minutes
+- [ ] All three members can run the app on their own phone independently
 
 ---
 
 ## This Week's Tasks by Person
 
 **Liban**
-- [ ] Create GitHub repo (`spatial-nav`)
-- [ ] Scaffold Expo app with TypeScript: `npx create-expo-app client --template blank-typescript`
-- [ ] Scaffold Node + Express backend (`server/`)
-- [ ] Push initial structure — invite Rudolph and Abdirashid
-- [ ] Add `.env.example` with `GROQ_API_KEY=` placeholder
-- [ ] Confirm both team members can pull and run locally via Expo Go
+- [ ] README complete: clone → install → `npx expo start` + `node server/index.js` + `python server/python/detect_app.py` works end-to-end in under 10 minutes
+- [ ] Make sure `.env.example` is accurate and documented
+- [ ] Performance check: any memory leaks after 20 min? (watch Node process memory)
+- [ ] Confirm CORS is not a problem under real phone + laptop WiFi conditions
+- [ ] Note: backend deploy to Railway/Render is out of scope — YOLOv8 needs the laptop GPU, can't deploy to a cloud server
 
-**Rudolph** ← *starts after Liban pushes initial repo*
-- [ ] Pull repo
-- [ ] Install expo-camera and request camera permissions
-- [ ] Render live rear camera feed in `Camera.tsx`
-- [ ] Install @tensorflow/tfjs + @tensorflow/tfjs-react-native + @tensorflow-models/coco-ssd
-- [ ] Call `tf.ready()` then load COCO-SSD model
-- [ ] Capture frames every 300ms (takePictureAsync or frame processor)
-- [ ] Run COCO-SSD on each frame
-- [ ] Draw bounding boxes over detections
-- [ ] Log raw detections to console
+**Rudolph**
+- [ ] Tune `MIN_BOX_AREA_RATIO` with real testing (walk toward door — adjust until alert fires at right moment)
+- [ ] Tune `MIN_FRAME_GAP_MS` / `MIN_CAPTURE_GAP_MS` — find slowest values that still feel responsive
+- [ ] Tune `MIN_CONFIDENCE` in Python (`YOLO_MIN_CONF`) — too many false positives? Raise it.
+- [ ] Test in: bright room, dim room, hallway, doorway, cluttered space
+- [ ] Document failure modes in `OPEN_QUESTIONS.md`
 
-> **If TF.js native setup breaks:** log it in OPEN_QUESTIONS.md immediately and ping the team.
-> The fallback is server-side detection — don't spend more than 2 days fighting it.
+**Abdirashid**
+- [ ] End-to-end test on iPhone AND Android
+- [ ] Check TTS voice quality on both platforms — adjust `rate`/`pitch` if needed
+- [ ] Tune alert pacing — does it feel right? Not too chatty, not missing things?
+- [ ] UI final pass — readable on phone screen in bright outdoor light
+- [ ] Rehearse demo walkthrough
 
-**Abdirashid** ← *starts after Liban pushes initial repo*
-- [ ] Pull repo
-- [ ] Build Expo app shell — full-screen camera layout, portrait mode
-- [ ] Placeholder status bar at bottom (will show alerts later)
-- [ ] Help Rudolph with bounding box overlay rendering if needed
-- [ ] Sign up for Groq at console.groq.com — get API key ready
+**All Three**
+- [ ] Full demo run-through together (simulate real presentation)
+- [ ] Record backup demo video
+- [ ] Agree on who presents which part
+
+---
+
+## Demo Script (5 minutes)
+
+1. **Intro (30 sec):** What the problem is. Who it's for.
+2. **Show the pipeline (1 min):** Three components in one sentence each — phone camera, YOLOv8 on laptop, Groq LLM alert.
+3. **Live demo (2 min):** Walk toward a door. Walk toward a person. Show the alert firing and expo-speech speaking.
+4. **What's next (30 sec):** Distance in feet. Backend deployment. Room calibration.
+5. **Q&A**
 
 ---
 
 ## Blockers / Notes
 
-_Nothing yet — update as the week goes_
-
----
-
-## Next Week Preview
-Week 2: Box size threshold. Left/right detection. Cooldown timer. Groq backend route. Prompt builder.
-All of those are blocked until Week 1 is done.
+- Backend runs locally (laptop + phone must be on same WiFi). This is intentional for demo — YOLOv8 needs local GPU/CPU.
+- Model upgraded to `yolov8s.pt` from `yolov8n.pt` — if first run is slow, it's downloading the model weights.
