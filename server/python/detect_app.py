@@ -47,13 +47,10 @@ def detect(req: DetectRequest):
                 }
             )
 
+        summary = ", ".join(d["class"] + f' {d["score"]:.2f}' for d in detections)
         print(
             f"[detect] {width}x{height}  {len(detections)} detections"
-            + (
-                f": {', '.join(f'{d[\"class\"]} {d[\"score\"]:.2f}' for d in detections)}"
-                if detections
-                else ""
-            ),
+            + (f": {summary}" if summary else ""),
             flush=True,
         )
 
