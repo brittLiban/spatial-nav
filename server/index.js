@@ -29,7 +29,11 @@ app.get('/health', async (req, res) => {
 app.use('/alert', alertRoute)
 app.use('/detect', detectRoute)
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-  console.log(`Expecting YOLO service at ${PYTHON_DETECT_URL}`)
-})
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+    console.log(`Expecting YOLO service at ${PYTHON_DETECT_URL}`)
+  })
+}
+
+module.exports = app

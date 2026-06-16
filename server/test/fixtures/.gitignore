@@ -1,0 +1,4 @@
+# The e2e test downloads a sample image here on first run — don't commit it.
+*.jpg
+*.jpeg
+*.png

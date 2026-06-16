@@ -68,6 +68,26 @@ Get a free Groq key at: https://console.groq.com
 
 ---
 
+## Testing
+
+```bash
+# Client: unit tests for the detection/ranking logic (Jest + ts-jest)
+cd client && npm test
+
+# Server: unit + integration tests for the routes (Jest + supertest, externals mocked)
+cd server && npm test
+
+# Server: end-to-end pipeline (real image, /detect, /alert)
+# Start the Python YOLO service + Node server first (needs GROQ_API_KEY), then:
+cd server && npm run test:e2e
+```
+
+- **Unit:** `client/src/utils/detectionFilters.test.ts` (filter/direction/proximity/ranking), `server/test/unit/` (alert fallback phrasing)
+- **Integration:** `server/test/integration/` drives `/health`, `/detect`, `/alert` with the Python service and Groq mocked, so it runs anywhere
+- **E2E:** `server/test/e2e/` runs a real image through the live stack and asserts a spoken alert comes out. It **self-skips** if the stack isn't running, so `npm test` is always safe in CI.
+
+---
+
 ## Docs
 
 Start here every session:

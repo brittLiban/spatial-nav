@@ -23,11 +23,12 @@ function buildFallback(objectClass, direction, proximity) {
 
 router.post('/', async (req, res) => {
   const { class: objectClass, direction, proximity, confidence } = req.body
-  const fallback = buildFallback(objectClass, direction, proximity)
 
   if (!objectClass || !direction) {
     return res.status(400).json({ error: 'class and direction are required' })
   }
+
+  const fallback = buildFallback(objectClass, direction, proximity)
 
   try {
     const proximityContext = proximity === 'immediate'
@@ -68,3 +69,4 @@ Rules:
 })
 
 module.exports = router
+module.exports.buildFallback = buildFallback
