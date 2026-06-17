@@ -18,8 +18,17 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 [ -f "$ROOT/server/.env" ]  || die "server/.env not found. Run: bash setup.sh"
 [ -f "$ROOT/client/.env" ]  || die "client/.env not found.  Run: bash setup.sh"
 
-[ -d "$ROOT/server/node_modules" ] || die "server/node_modules missing. Run: bash setup.sh"
-[ -d "$ROOT/client/node_modules" ] || die "client/node_modules missing. Run: bash setup.sh"
+if [ ! -d "$ROOT/server/node_modules" ]; then
+  echo "server/node_modules missing — running npm install..."
+  (cd "$ROOT/server" && npm install --silent) || die "npm install failed in server/"
+  ok "Server deps installed"
+fi
+
+if [ ! -d "$ROOT/client/node_modules" ]; then
+  echo "client/node_modules missing — running npm install..."
+  (cd "$ROOT/client" && npm install --silent) || die "npm install failed in client/"
+  ok "Client deps installed"
+fi
 
 if command -v py &>/dev/null && py --version &>/dev/null 2>&1; then
   PYTHON="py"
