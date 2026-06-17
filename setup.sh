@@ -50,7 +50,7 @@ ok "Server deps installed"
 
 # ── Node (client) ───────────────────────────────────────────────────────────
 echo "Installing Node dependencies (client)..."
-(cd "$ROOT/client" && npm install --silent)
+(cd "$ROOT/client" && npm install --legacy-peer-deps --silent)
 ok "Client deps installed"
 
 # ── Detect local WiFi IP ─────────────────────────────────────────────────────

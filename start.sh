@@ -19,8 +19,8 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 [ -f "$ROOT/client/.env" ]  || die "client/.env not found.  Run: bash setup.sh"
 
 echo "Checking dependencies..."
-(cd "$ROOT/server" && npm install --silent) || die "npm install failed in server/"
-(cd "$ROOT/client" && npm install --silent) || die "npm install failed in client/"
+(cd "$ROOT/server" && npm install) || die "npm install failed in server/"
+(cd "$ROOT/client" && npm install --legacy-peer-deps) || die "npm install failed in client/"
 ok "Dependencies up to date"
 
 if command -v py &>/dev/null && py --version &>/dev/null 2>&1; then
