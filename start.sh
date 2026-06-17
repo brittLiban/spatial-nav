@@ -18,6 +18,9 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 [ -f "$ROOT/server/.env" ]  || die "server/.env not found. Run: bash setup.sh"
 [ -f "$ROOT/client/.env" ]  || die "client/.env not found.  Run: bash setup.sh"
 
+[ -d "$ROOT/server/node_modules" ] || die "server/node_modules missing. Run: bash setup.sh"
+[ -d "$ROOT/client/node_modules" ] || die "client/node_modules missing. Run: bash setup.sh"
+
 if command -v py &>/dev/null && py --version &>/dev/null 2>&1; then
   PYTHON="py"
 elif command -v python3 &>/dev/null && python3 --version &>/dev/null 2>&1; then
