@@ -38,19 +38,22 @@ VENV="$ROOT/server/python/venv"
 if [ ! -d "$VENV" ]; then
   "$PYTHON" -m venv "$VENV"
 fi
-# Activate and install
-"$VENV/Scripts/python" -m pip install -q --upgrade pip
-"$VENV/Scripts/python" -m pip install -q -r "$ROOT/server/python/requirements.txt"
+# Resolve venv python path (Windows: Scripts/, Mac/Linux: bin/)
+VENV_PYTHON="$VENV/Scripts/python"
+[ -f "$VENV/bin/python" ] && VENV_PYTHON="$VENV/bin/python"
+[ -f "$VENV_PYTHON" ] || die "venv python not found at $VENV_PYTHON"
+"$VENV_PYTHON" -m pip install -q --upgrade pip
+"$VENV_PYTHON" -m pip install -q -r "$ROOT/server/python/requirements.txt"
 ok "Python deps installed (venv at server/python/venv)"
 
 # ── Node (server) ───────────────────────────────────────────────────────────
 echo "Installing Node dependencies (server)..."
-(cd "$ROOT/server" && npm install --silent)
+(cd "$ROOT/server" && npm install) || die "npm install failed in server/"
 ok "Server deps installed"
 
 # ── Node (client) ───────────────────────────────────────────────────────────
 echo "Installing Node dependencies (client)..."
-(cd "$ROOT/client" && npm install --legacy-peer-deps --silent)
+(cd "$ROOT/client" && npm install --legacy-peer-deps) || die "npm install failed in client/"
 ok "Client deps installed"
 
 # ── Detect local WiFi IP ─────────────────────────────────────────────────────
