@@ -35,22 +35,16 @@ export default function HomeScreen({ onStartScanning }: Props) {
 
       <View style={styles.topHalf} onLayout={handleTopHalfLayout}>
         <View style={styles.header}>
-          <Text style={styles.title}>Spatial Navigator</Text>
+          <Text style={styles.title}>› Spatial Navigator ‹</Text>
         </View>
-
         <View style={styles.introArea}>
           <View style={[styles.heroCard, !showEyebrow && styles.heroCardCompact]}>
-            <View style={[styles.iconRing, !showEyebrow && styles.iconRingCompact]}>
-              <View style={[styles.iconCircle, !showEyebrow && styles.iconCircleCompact]}>
-                <Text style={[styles.iconText, !showEyebrow && styles.iconTextCompact]}>◎</Text>
-              </View>
-            </View>
+            <Text style={[styles.subtitle2, !showEyebrow && styles.subtitleCompact]}>
+            Text Instructions for Helpers:
+            </Text>
             <Text style={[styles.subtitle, !showEyebrow && styles.subtitleCompact]}>
-            Welcome to Spatial Navigator — a real-time voice navigation app for people with visual impairments.
-            Point your phone camera at the world — the app detects nearby objects, figures out which side they're on, and speaks short natural-language alerts out loud.
-            When prompted, please allow camera and location permissions so we can guide you safely. Your data stays private and is only processed in real-time.
-            Press Start on the lower half of the screen to get started.
-            To exit, press Stop on the bottom quarter of the next screen.
+            If this the individual's first time, please recieve permission to allow camera and location permissions when prompted so we can guide them safely. The data stays private and is only processed in real-time.
+            Press Start on the lower half of the screen to get started. To exit, press Stop on the bottom quarter of the next screen.
             </Text>
           </View>
         </View>
@@ -102,6 +96,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.title,
     fontSize: 32,
+    textAlign: 'center',
   },
   introArea: {
     flex: 1,
@@ -164,7 +159,14 @@ const styles = StyleSheet.create({
     ...typography.subtitle,
     textAlign: 'center',
     fontSize: 17,
-    lineHeight: 24,
+    lineHeight: 20,
+  },
+  subtitle2: {
+    ...typography.subtitle,
+    textAlign: 'center',
+    fontSize: 19,
+    lineHeight: 20,
+    fontWeight: '600',
   },
   subtitleCompact: {
     fontSize: 15,

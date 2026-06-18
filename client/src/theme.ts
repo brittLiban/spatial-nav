@@ -4,7 +4,7 @@ export const colors = {
   background: '#FFFFFF',
   surface: '#F2F2F7',
   text: '#1C1C1E',
-  textSecondary: '#8E8E93',
+  textSecondary: '#77777A',
   border: '#E5E5EA',
   white: '#FFFFFF',
   cameraOverlay: 'rgba(28, 28, 30, 0.88)',
