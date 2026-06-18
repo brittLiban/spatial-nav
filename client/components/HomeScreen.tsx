@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import {
+  LayoutChangeEvent,
   Pressable,
   StyleSheet,
   Text,
@@ -8,11 +10,20 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import * as Haptics from 'expo-haptics'
 import { colors, radii, spacing, typography } from '../src/theme'
 
+const TIGHT_TOP_HALF_HEIGHT = 300
+
 interface Props {
   onStartScanning: () => void
 }
 
 export default function HomeScreen({ onStartScanning }: Props) {
+  const [topHalfHeight, setTopHalfHeight] = useState(0)
+  const showEyebrow = topHalfHeight >= TIGHT_TOP_HALF_HEIGHT
+
+  const handleTopHalfLayout = (event: LayoutChangeEvent) => {
+    setTopHalfHeight(event.nativeEvent.layout.height)
+  }
+
   const handleStart = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     onStartScanning()
@@ -21,26 +32,29 @@ export default function HomeScreen({ onStartScanning }: Props) {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.glowTop} />
-      <View style={styles.glowBottom} />
 
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>Accessibility</Text>
-        <Text style={styles.title}>Spatial Navigator</Text>
-      </View>
-
-      <View style={styles.center}>
-        <View style={styles.heroCard}>
-          <View style={styles.iconRing}>
-            <View style={styles.iconCircle}>
-              <Text style={styles.iconText}>◎</Text>
-            </View>
-          </View>
-          <Text style={styles.subtitle}>
-            Point your camera at the world. Get spoken alerts about people,
-            chairs, and obstacles around you.
-          </Text>
+      <View style={styles.topHalf} onLayout={handleTopHalfLayout}>
+        <View style={styles.header}>
+          {showEyebrow && <Text style={styles.eyebrow}>Accessibility</Text>}
+          <Text style={styles.title}>Spatial Navigator</Text>
         </View>
 
+        <View style={styles.introArea}>
+          <View style={[styles.heroCard, !showEyebrow && styles.heroCardCompact]}>
+            <View style={[styles.iconRing, !showEyebrow && styles.iconRingCompact]}>
+              <View style={[styles.iconCircle, !showEyebrow && styles.iconCircleCompact]}>
+                <Text style={[styles.iconText, !showEyebrow && styles.iconTextCompact]}>◎</Text>
+              </View>
+            </View>
+            <Text style={[styles.subtitle, !showEyebrow && styles.subtitleCompact]}>
+              Point your camera at the world. Get spoken alerts about people,
+              chairs, and obstacles around you.
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.bottomHalf}>
         <Pressable
           style={({ pressed }) => [
             styles.startButton,
@@ -53,15 +67,6 @@ export default function HomeScreen({ onStartScanning }: Props) {
         >
           <Text style={styles.startButtonText}>Start</Text>
         </Pressable>
-      </View>
-
-      <View style={styles.footer}>
-        <View style={styles.featurePill}>
-          <Text style={styles.featureText}>Object detection</Text>
-        </View>
-        <View style={styles.featurePill}>
-          <Text style={styles.featureText}>Voice alerts</Text>
-        </View>
       </View>
     </SafeAreaView>
   )
@@ -82,18 +87,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: 'rgba(0, 122, 255, 0.12)',
   },
-  glowBottom: {
-    position: 'absolute',
-    bottom: 120,
-    left: -80,
-    width: 200,
-    height: 200,
-    borderRadius: radii.pill,
-    backgroundColor: 'rgba(0, 122, 255, 0.08)',
+  topHalf: {
+    flex: 1,
   },
   header: {
     paddingTop: spacing.md,
-    marginBottom: spacing.lg,
   },
   eyebrow: {
     ...typography.label,
@@ -103,10 +101,10 @@ const styles = StyleSheet.create({
     ...typography.title,
     fontSize: 32,
   },
-  center: {
+  introArea: {
     flex: 1,
     justifyContent: 'center',
-    gap: spacing.xl,
+    paddingBottom: spacing.sm,
   },
   heroCard: {
     backgroundColor: colors.surface,
@@ -117,6 +115,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  heroCardCompact: {
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
   iconRing: {
     width: 112,
     height: 112,
@@ -125,6 +127,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
+  },
+  iconRingCompact: {
+    width: 88,
+    height: 88,
+    marginBottom: spacing.md,
   },
   iconCircle: {
     width: 88,
@@ -139,26 +146,38 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 6,
   },
+  iconCircleCompact: {
+    width: 68,
+    height: 68,
+  },
   iconText: {
     fontSize: 40,
     color: colors.white,
     fontWeight: '300',
   },
+  iconTextCompact: {
+    fontSize: 32,
+  },
   subtitle: {
     ...typography.subtitle,
     textAlign: 'center',
-    maxWidth: 300,
     fontSize: 17,
     lineHeight: 24,
   },
+  subtitleCompact: {
+    fontSize: 15,
+    lineHeight: 21,
+  },
+  bottomHalf: {
+    flex: 1,
+    paddingBottom: spacing.lg,
+  },
   startButton: {
-    alignSelf: 'stretch',
+    flex: 1,
     backgroundColor: colors.primary,
-    paddingVertical: 28,
     borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 88,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
@@ -174,24 +193,5 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     letterSpacing: 1,
-  },
-  footer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  featurePill: {
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  featureText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
   },
 })
