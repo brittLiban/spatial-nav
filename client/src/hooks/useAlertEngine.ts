@@ -7,6 +7,7 @@ import {
   type FilteredDetection,
 } from '../utils/detectionFilters'
 import { ALERT_CLEAR_MS, COOLDOWN_MS, GLOBAL_ALERT_GAP_MS } from '../constants/detectionConfig'
+import { SPEECH_OPTIONS } from '../constants/speechConfig'
 import type { DetectionFrame } from './useObjectDetection'
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001'
@@ -98,7 +99,7 @@ export function useAlertEngine(detectionFrame: DetectionFrame) {
     const immediateText = localFallback(primary)
     setCurrentAlert(immediateText)
     Speech.stop()
-    Speech.speak(immediateText, { language: 'en', rate: 1.1, pitch: 1.0, volume: 1.0 })
+    Speech.speak(immediateText, SPEECH_OPTIONS)
 
     abortRef.current?.abort()
     const controller = new AbortController()
@@ -128,7 +129,7 @@ export function useAlertEngine(detectionFrame: DetectionFrame) {
         if (alertText !== immediateText) {
           setCurrentAlert(alertText)
           Speech.stop()
-          Speech.speak(alertText, { language: 'en', rate: 1.1, pitch: 1.0, volume: 1.0 })
+          Speech.speak(alertText, SPEECH_OPTIONS)
         }
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
