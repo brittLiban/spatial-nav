@@ -35,7 +35,6 @@ export default function HomeScreen({ onStartScanning }: Props) {
 
       <View style={styles.topHalf} onLayout={handleTopHalfLayout}>
         <View style={styles.header}>
-          {showEyebrow && <Text style={styles.eyebrow}>Accessibility</Text>}
           <Text style={styles.title}>Spatial Navigator</Text>
         </View>
 
@@ -47,8 +46,11 @@ export default function HomeScreen({ onStartScanning }: Props) {
               </View>
             </View>
             <Text style={[styles.subtitle, !showEyebrow && styles.subtitleCompact]}>
-              Point your camera at the world. Get spoken alerts about people,
-              chairs, and obstacles around you.
+            Welcome to Spatial Navigator — a real-time voice navigation app for people with visual impairments.
+            Point your phone camera at the world — the app detects nearby objects, figures out which side they're on, and speaks short natural-language alerts out loud.
+            When prompted, please allow camera and location permissions so we can guide you safely. Your data stays private and is only processed in real-time.
+            Press Start on the lower half of the screen to get started.
+            To exit, press Stop on the bottom quarter of the next screen.
             </Text>
           </View>
         </View>
