@@ -10,23 +10,15 @@ export default function AlertBar({ alert, isScanning }: Props) {
   const text = alert ?? (isScanning ? 'Scanning…' : 'No hazards detected')
 
   return (
-    <View style={styles.container}>
-      <View style={styles.bubble}>
-        <Text style={styles.text} numberOfLines={2}>
-          {text}
-        </Text>
-      </View>
+    <View style={styles.bubble}>
+      <Text style={styles.text} numberOfLines={2}>
+        {text}
+      </Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: spacing.lg,
-    left: spacing.md,
-    right: spacing.md,
-  },
   bubble: {
     backgroundColor: colors.cameraOverlay,
     borderRadius: radii.lg,
@@ -34,6 +26,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
+    marginBottom: spacing.md,
   },
   text: {
     color: colors.white,

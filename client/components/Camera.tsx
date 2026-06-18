@@ -1,14 +1,14 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import {
   LayoutChangeEvent,
-  Platform,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   View,
 } from 'react-native'
 import { CameraView as ExpoCameraView, useCameraPermissions } from 'expo-camera'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as Haptics from 'expo-haptics'
 import { useObjectDetection } from '../src/hooks/useObjectDetection'
 import { useAlertEngine } from '../src/hooks/useAlertEngine'
 import { filterDetections } from '../src/utils/detectionFilters'
@@ -25,34 +25,65 @@ function ScanHeader({
   onExit,
   title,
   variant = 'dark',
+  showClose = true,
 }: {
-  onExit: () => void
+  onExit?: () => void
   title: string
   variant?: 'light' | 'dark'
+  showClose?: boolean
 }) {
-  const topInset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 8 : 56
+  const insets = useSafeAreaInsets()
   const isLight = variant === 'light'
 
   return (
     <View
       style={[
         isLight ? styles.headerLight : styles.header,
-        { paddingTop: topInset },
+        { paddingTop: insets.top + spacing.sm },
+        !showClose && styles.headerCentered,
       ]}
     >
-      <Pressable
-        style={({ pressed }) => [
-          isLight ? styles.closeButtonLight : styles.closeButton,
-          pressed && (isLight ? styles.closeButtonLightPressed : styles.closeButtonPressed),
-        ]}
-        onPress={onExit}
-        hitSlop={12}
-      >
-        <Text style={isLight ? styles.closeButtonTextLight : styles.closeButtonText}>✕</Text>
-      </Pressable>
-      <Text style={isLight ? styles.headerTitleLight : styles.headerTitle}>{title}</Text>
-      <View style={styles.headerSpacer} />
+      {showClose ? (
+        <>
+          <Pressable
+            style={({ pressed }) => [
+              isLight ? styles.closeButtonLight : styles.closeButton,
+              pressed && (isLight ? styles.closeButtonLightPressed : styles.closeButtonPressed),
+            ]}
+            onPress={onExit}
+            hitSlop={12}
+          >
+            <Text style={isLight ? styles.closeButtonTextLight : styles.closeButtonText}>✕</Text>
+          </Pressable>
+          <Text style={isLight ? styles.headerTitleLight : styles.headerTitle}>{title}</Text>
+          <View style={styles.headerSpacer} />
+        </>
+      ) : (
+        <Text style={isLight ? styles.headerTitleLight : styles.headerTitle}>{title}</Text>
+      )}
     </View>
+  )
+}
+
+function StopButton({ onPress }: { onPress: () => void }) {
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    onPress()
+  }
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.stopButton,
+        pressed && styles.stopButtonPressed,
+      ]}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel="Stop"
+      accessibilityHint="Stops scanning and returns to the home screen"
+    >
+      <Text style={styles.stopButtonText}>STOP</Text>
+    </Pressable>
   )
 }
 
@@ -64,7 +95,7 @@ function PermissionsScreen({
   onRequestPermission: () => void
 }) {
   return (
-    <View style={styles.permissionScreen}>
+    <SafeAreaView style={styles.permissionScreen} edges={['bottom', 'left', 'right']}>
       <ScanHeader onExit={onExit} title="Permissions" variant="light" />
       <View style={styles.permissionBody}>
         <View style={styles.permissionIcon}>
@@ -85,11 +116,12 @@ function PermissionsScreen({
           <Text style={styles.primaryButtonText}>Grant Access</Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
 export default function CameraView({ onExit }: Props) {
+  const insets = useSafeAreaInsets()
   const [permission, requestPermission] = useCameraPermissions()
   const cameraRef = useRef<ExpoCameraView>(null)
   const [isActive, setIsActive] = useState(false)
@@ -120,9 +152,9 @@ export default function CameraView({ onExit }: Props) {
 
   if (!permission) {
     return (
-      <View style={styles.loadingScreen}>
+      <SafeAreaView style={styles.loadingScreen} edges={['top', 'bottom', 'left', 'right']}>
         <Text style={styles.loadingText}>Loading…</Text>
-      </View>
+      </SafeAreaView>
     )
   }
 
@@ -145,9 +177,9 @@ export default function CameraView({ onExit }: Props) {
           setTimeout(() => setIsActive(true), CAMERA_WARMUP_MS)
         }}
       />
-      <ScanHeader onExit={handleExit} title="Scanning" />
+      <ScanHeader title="Scanning" showClose={false} />
       {detectError && (
-        <View style={styles.modelErrorBanner}>
+        <View style={[styles.modelErrorBanner, { top: insets.top + 72 }]}>
           <Text style={styles.modelErrorText}>{detectError}</Text>
         </View>
       )}
@@ -155,18 +187,23 @@ export default function CameraView({ onExit }: Props) {
         <>
           <DetectionOverlay detectionFrame={detectionFrame} screenSize={screenSize} />
           {activeCount > 0 && (
-            <View style={styles.badge}>
+            <View style={[styles.badge, { top: insets.top + 56 }]}>
               <Text style={styles.badgeText}>
                 {activeCount} hazard{activeCount === 1 ? '' : 's'}
               </Text>
             </View>
           )}
+        </>
+      )}
+      <View style={[styles.bottomDock, { paddingBottom: insets.bottom + spacing.md }]}>
+        {!detectError && (
           <AlertBar
             alert={currentAlert}
             isScanning={activeCount === 0 && !currentAlert}
           />
-        </>
-      )}
+        )}
+        <StopButton onPress={handleExit} />
+      </View>
     </View>
   )
 }
@@ -199,6 +236,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
     backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  headerCentered: {
+    justifyContent: 'center',
   },
   headerLight: {
     flexDirection: 'row',
@@ -257,7 +297,6 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 100,
     alignSelf: 'center',
     backgroundColor: colors.cameraOverlay,
     paddingHorizontal: spacing.sm,
@@ -271,7 +310,6 @@ const styles = StyleSheet.create({
   },
   modelErrorBanner: {
     position: 'absolute',
-    top: 120,
     left: spacing.md,
     right: spacing.md,
     backgroundColor: 'rgba(255,59,48,0.92)',
@@ -332,5 +370,34 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     ...typography.button,
+  },
+  bottomDock: {
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
+    bottom: 0,
+  },
+  stopButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 28,
+    borderRadius: radii.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 88,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  stopButtonPressed: {
+    backgroundColor: colors.primaryDark,
+    transform: [{ scale: 0.98 }],
+  },
+  stopButtonText: {
+    ...typography.button,
+    fontSize: 32,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 })
