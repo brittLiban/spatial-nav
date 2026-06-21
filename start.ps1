@@ -44,6 +44,9 @@ PYTHON_DETECT_URL=http://127.0.0.1:3002
 }
 
 Write-Host ""
+Write-Host "Starting Python detection service..."
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\server\python'; venv\Scripts\Activate.ps1; python detect_app.py"
+
 Write-Host "Starting server..."
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\server'; npm run dev"
 
